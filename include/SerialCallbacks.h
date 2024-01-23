@@ -21,6 +21,7 @@ void getBoardInfo(SerialCommunicator &serialCommunicator, WireOled &display, con
 
     SerialProtocol::BoardInfo boardInfo;
     boardInfo.boardVersion = value.someInt;
+    boardInfo.temperature = value.someFloat * 0.5;
     serialCommunicator.sendResponse(
         SerialProtocol::MessageType::responseBoardInfo,
         reinterpret_cast<byte*>(&boardInfo)

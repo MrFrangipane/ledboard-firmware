@@ -32,6 +32,7 @@ namespace ledboard {
         struct BoardInfo {
             int boardVersion = 1;
             char ipAddress[16] = "192.168.100.201";
+            float temperature = 0.75;
         };
 
         static constexpr uint8_t headerSize = 5;

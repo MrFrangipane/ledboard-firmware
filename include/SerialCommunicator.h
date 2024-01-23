@@ -44,12 +44,11 @@ public:
         while (Serial.available() > 0) {
             byte incomingByte = Serial.read();
 
-            if (receivingStatus == ReceivingStatus::Idle) {
-                if (incomingByte == SerialProtocol::flagBegin) {
-                    receivingStatus = ReceivingStatus::ReceivingHeader;
-                    return; // discard incomingByte as it is a flag
-                }
+            if (receivingStatus == ReceivingStatus::Idle && incomingByte == SerialProtocol::flagBegin) {
+                receivingStatus = ReceivingStatus::ReceivingHeader;
+                return;
             }
+
             if (receivingStatus == ReceivingStatus::ReceivingHeader) {
                 if (headerBufferIndex < SerialProtocol::headerSize) {
                     headerBuffer[headerBufferIndex] = incomingByte;
@@ -92,7 +91,12 @@ public:
         }
         Serial.write(static_cast<byte>(SerialProtocol::flagBegin));
         Serial.write(static_cast<byte>(messageType));
-        Serial.write(dataSize);
+
+        Serial.write(dataSize & 255);
+        Serial.write((dataSize >> 8)  & 255);
+        Serial.write((dataSize >> 16) & 255);
+        Serial.write((dataSize >> 24) & 255);
+
         for (int i = 0; i < dataSize; i++) {
             Serial.write(data[i]);
         }
