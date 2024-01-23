@@ -8,30 +8,24 @@
 
 
 namespace ledboard {
-    struct StructTest {
-        int someInt;
-        float someFloat;
-    };
 
-    byte handleCommandA(WireOled &display, const std::vector <byte> &data, SerialProtocol::DataType dataType) {
-        switch (dataType) {
-            case SerialProtocol::DataType::StructTestType: {
-                StructTest value;
-                memcpy(&value, data.data(), data.size());
 
-                display.write(0, 0, "f: ");
-                display.write(0, 3, String(value.someFloat) + "    ");
-                display.write(1, 0, "i: ");
-                display.write(1, 3, String(value.someInt) + "    ");
+void getBoardInfo(SerialCommunicator &serialCommunicator, WireOled &display, const std::vector <byte> &data) {
+    SerialProtocol::StructTest value;
+    memcpy(&value, data.data(), data.size());
 
-                break;
-            }
-            default:
-                Serial.println("Unknown data type");
-        }
+    display.write(0, 0, "f: ");
+    display.write(0, 3, String(value.someFloat) + "    ");
+    display.write(1, 0, "i: ");
+    display.write(1, 3, String(value.someInt) + "    ");
 
-        return SerialProtocol::responseOk;
-    }
+    SerialProtocol::BoardInfo boardInfo;
+    boardInfo.boardVersion = value.someInt;
+    serialCommunicator.sendResponse(
+        SerialProtocol::MessageType::responseBoardInfo,
+        reinterpret_cast<byte*>(&boardInfo)
+    );
+}
 
 }
 #endif //PLATFORMIO_SERIALCALLBACKS_H
