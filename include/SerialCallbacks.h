@@ -36,12 +36,12 @@ void configure(SerialCommunicator &serialCommunicator, WireOled &display, Adafru
     else if (static_cast<SerialProtocol::PixelType>(configuration.pixelType) == SerialProtocol::PixelType::RGBW) {
         leds.updateType(NEO_RGBW);
     }
-    leds.updateLength(configuration.pixelCount);
+//    leds.updateLength(configuration.pixelCount * 8);
 
-    display.write(0, 0, "Pixel count ");
-    display.write(0, 12, String(configuration.pixelCount) + "    ");
-    display.write(1, 0, "Pixel type ");
-    display.write(1, 11, String(configuration.pixelType) + "    ");
+    display.write(0, 0, "Pixel type ");
+    display.write(0, 11, String(configuration.pixelType) + "    ");
+    display.write(1, 0, "Count (x8) ");
+    display.write(1, 11, String(configuration.pixelCount) + "    ");
 }
 
 }
