@@ -38,6 +38,7 @@ public:
 
     struct Configuration {
         int pixelType = static_cast<int>(PixelType::RGB);
+        int pixelCount = 60;
     };
 
     static constexpr uint8_t headerSize = 5;

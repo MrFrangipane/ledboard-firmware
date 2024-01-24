@@ -29,17 +29,19 @@ void configure(SerialCommunicator &serialCommunicator, WireOled &display, Adafru
     SerialProtocol::Configuration configuration;
     memcpy(&configuration, data.data(), data.size());
 
+    // deprecated, NeoPixel doc says to use the new keyword
     if (static_cast<SerialProtocol::PixelType>(configuration.pixelType) == SerialProtocol::PixelType::RGB) {
         leds.updateType(NEO_RGB);
     }
     else if (static_cast<SerialProtocol::PixelType>(configuration.pixelType) == SerialProtocol::PixelType::RGBW) {
         leds.updateType(NEO_RGBW);
     }
+    leds.updateLength(configuration.pixelCount);
 
+    display.write(0, 0, "Pixel count ");
+    display.write(0, 12, String(configuration.pixelCount) + "    ");
     display.write(1, 0, "Pixel type ");
     display.write(1, 11, String(configuration.pixelType) + "    ");
-
-    leds.clear();
 }
 
 }
