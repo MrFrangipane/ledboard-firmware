@@ -25,5 +25,23 @@ void illuminate(SerialCommunicator &serialCommunicator, WireOled &display, Adafr
     display.write(1, 11, String(illuminated.ledIndex) + "    ");
 }
 
+void configure(SerialCommunicator &serialCommunicator, WireOled &display, Adafruit_NeoPXL8 &leds, const std::vector <byte> &data) {
+    SerialProtocol::Configuration configuration;
+    memcpy(&configuration, data.data(), data.size());
+
+    if (static_cast<SerialProtocol::PixelType>(configuration.pixelType) == SerialProtocol::PixelType::RGB) {
+        leds.updateType(NEO_RGB);
+    }
+    else if (static_cast<SerialProtocol::PixelType>(configuration.pixelType) == SerialProtocol::PixelType::RGBW) {
+        leds.updateType(NEO_RGBW);
+    }
+
+    display.write(1, 0, "Pixel type ");
+    display.write(1, 11, String(configuration.pixelType) + "    ");
+
+    leds.clear();
 }
+
+}
+
 #endif //PLATFORMIO_SERIALCALLBACKS_H

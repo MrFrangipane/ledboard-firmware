@@ -20,6 +20,7 @@ class SerialProtocol {
 public:
     enum class MessageType : byte {
         Illuminate = 0x41,  // "A"
+        Configure = 0x42    // "B"
     };
 
     struct IlluminatedLed {
@@ -30,6 +31,15 @@ public:
         int w = 0;
     };
 
+    enum class PixelType : int {
+        RGB,
+        RGBW
+    };
+
+    struct Configuration {
+        int pixelType = static_cast<int>(PixelType::RGB);
+    };
+
     static constexpr uint8_t headerSize = 5;
     static constexpr byte flagBegin = 0x3c; // "<"
     static constexpr byte flagEnd = 0x3e;   // ">"
@@ -38,7 +48,8 @@ public:
 };
 
 std::map<SerialProtocol::MessageType, int> SerialProtocol::messageTypeToDataSize = {
-    {SerialProtocol::MessageType::Illuminate, sizeof(SerialProtocol::IlluminatedLed)}
+    {SerialProtocol::MessageType::Illuminate, sizeof(SerialProtocol::IlluminatedLed)},
+    {SerialProtocol::MessageType::Configure, sizeof(SerialProtocol::Configuration)}
 };
 
 }

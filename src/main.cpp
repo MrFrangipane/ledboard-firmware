@@ -15,6 +15,7 @@ void setup() {
     Serial.begin();
     serialCommunicator.init();
     serialCommunicator.registerCallback(SerialProtocol::MessageType::Illuminate, illuminate);
+    serialCommunicator.registerCallback(SerialProtocol::MessageType::Configure, configure);
 }
 
 void loop() {

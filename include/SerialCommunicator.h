@@ -30,7 +30,7 @@ public:
     void init() {
         leds.begin();
         leds.setBrightness(255);
-        leds.fill(0x00400000); // 25% red
+        leds.fill(0x00400000); // 25% green
         leds.show();
 
         display.init();
@@ -116,7 +116,7 @@ private:
     std::vector<byte> responseBuffer;
     WireOled display;
     int8_t pins[8] = { 8, 9, 10, 11, 12, 13, 14, 15 };
-    Adafruit_NeoPXL8 leds {150, pins, NEO_GRBW};
+    Adafruit_NeoPXL8 leds {150, pins, NEO_RGBW};
 
     void resetToIdle() {
         receivingStatus = ReceivingStatus::Idle;
