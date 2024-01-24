@@ -7,37 +7,39 @@
 
 namespace ledboard {
 
-    class SerialProtocol {
-        /*
-         * Message topology
-         *
-         * ```
-         * |   0   |       1      | 2 | 3 | 4 | 5 |   n  | 6 + n |
-         * | begin | message type |   data size   | data |  end  |
-         * |-------|           header             | data |-------|
-         * ```
-         */
-    public:
-        enum class MessageType : byte {
-            responseOk = 0x41,  // "A"
-            getBoardInfo,       // "B"
-            responseBoardInfo,  // "C"
-        };
-
-        struct StructTest {
-            int someInt = 0;
-            float someFloat = 0.0;
-        };
-
-        struct BoardInfo {
-            int boardVersion = 1;
-            char ipAddress[16] = "192.168.100.201";
-            float temperature = 0.75;
-        };
-
-        static constexpr uint8_t headerSize = 5;
-        static constexpr byte flagBegin = 0x3c; // "<"
-        static constexpr byte flagEnd = 0x3e;   // ">"
+class SerialProtocol {
+    /*
+     * Message topology
+     *
+     * ```
+     * |   0   |       1      | 2 | 3 | 4 | 5 |   n  | 6 + n |
+     * | begin | message type |   data size   | data |  end  |
+     * |-------|           header             | data |-------|
+     * ```
+     */
+public:
+    enum class MessageType : byte {
+        Illuminate = 0x41,  // "A"
     };
+
+    struct IlluminatedLed {
+        int ledIndex = 0;
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        int w = 0;
+    };
+
+    static constexpr uint8_t headerSize = 5;
+    static constexpr byte flagBegin = 0x3c; // "<"
+    static constexpr byte flagEnd = 0x3e;   // ">"
+
+    static std::map<MessageType, int> messageTypeToDataSize;
+};
+
+std::map<SerialProtocol::MessageType, int> SerialProtocol::messageTypeToDataSize = {
+    {SerialProtocol::MessageType::Illuminate, sizeof(SerialProtocol::IlluminatedLed)}
+};
+
 }
 #endif //PLATFORMIO_SERIALPROTOCOL_H

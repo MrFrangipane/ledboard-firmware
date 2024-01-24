@@ -7,6 +7,7 @@
 #include <map>
 #include "SerialProtocol.h"
 #include "WireOled.h"
+#include "Adafruit_NeoPXL8.h"
 
 
 #define COMMAND_BUFFER_SIZE
@@ -20,13 +21,18 @@ enum class ReceivingStatus : byte {
 
 class SerialCommunicator {
 public:
-    using Callback = std::function<void(SerialCommunicator &, WireOled &, const std::vector<byte> &)>;
+    using Callback = std::function<void(SerialCommunicator &, WireOled &, Adafruit_NeoPXL8 &, const std::vector<byte> &)>;
 
     void registerCallback(SerialProtocol::MessageType messageType, Callback callback) {
         callbacks[messageType] = callback;
     }
 
     void init() {
+        leds.begin();
+        leds.setBrightness(255);
+        leds.fill(0x00400000); // 25% red
+        leds.show();
+
         display.init();
         display.setContrast(0);
         display.write("Hello");
@@ -67,7 +73,7 @@ public:
                 }
                 else if (dataBuffer.size() == inDataSize && incomingByte == SerialProtocol::flagEnd) {
                     if (callbacks.find(mMessageType) != callbacks.end()) {
-                        callbacks[mMessageType](*this, display, dataBuffer);
+                        callbacks[mMessageType](*this, display, leds, dataBuffer);
                     }
                     resetToIdle();
                 }
@@ -80,14 +86,10 @@ public:
 
     void sendResponse(SerialProtocol::MessageType messageType, byte* data) {
         uint16_t dataSize;
-        // FIXME use a pre calculated map ?
-        switch (messageType) {
-            case SerialProtocol::MessageType::responseBoardInfo:
-                dataSize = sizeof(SerialProtocol::BoardInfo);
-                break;
-
-            default:
-                return;
+        if (SerialProtocol::messageTypeToDataSize.find(messageType) != SerialProtocol::messageTypeToDataSize.end()) {
+            dataSize = SerialProtocol::messageTypeToDataSize[messageType];
+        } else {
+            return;
         }
         Serial.write(static_cast<byte>(SerialProtocol::flagBegin));
         Serial.write(static_cast<byte>(messageType));
@@ -113,6 +115,8 @@ private:
     std::vector<byte> dataBuffer;
     std::vector<byte> responseBuffer;
     WireOled display;
+    int8_t pins[8] = { 8, 9, 10, 11, 12, 13, 14, 15 };
+    Adafruit_NeoPXL8 leds {150, pins, NEO_GRBW};
 
     void resetToIdle() {
         receivingStatus = ReceivingStatus::Idle;

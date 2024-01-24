@@ -14,7 +14,7 @@ void setup() {
 
     Serial.begin();
     serialCommunicator.init();
-    serialCommunicator.registerCallback(SerialProtocol::MessageType::getBoardInfo, getBoardInfo);
+    serialCommunicator.registerCallback(SerialProtocol::MessageType::Illuminate, illuminate);
 }
 
 void loop() {

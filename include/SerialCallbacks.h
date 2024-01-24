@@ -5,27 +5,24 @@
 #include <vector>
 #include "SerialCommunicator.h"
 #include "WireOled.h"
+#include "Adafruit_NeoPXL8.h"
 
 
 namespace ledboard {
 
 
-void getBoardInfo(SerialCommunicator &serialCommunicator, WireOled &display, const std::vector <byte> &data) {
-    SerialProtocol::StructTest value;
-    memcpy(&value, data.data(), data.size());
+void illuminate(SerialCommunicator &serialCommunicator, WireOled &display, Adafruit_NeoPXL8 &leds, const std::vector <byte> &data) {
+    SerialProtocol::IlluminatedLed illuminated;
+    memcpy(&illuminated, data.data(), data.size());
 
-    display.write(0, 0, "f: ");
-    display.write(0, 3, String(value.someFloat) + "    ");
-    display.write(1, 0, "i: ");
-    display.write(1, 3, String(value.someInt) + "    ");
+    leds.fill(0x00000000); // black
+    if (illuminated.ledIndex > 0) {
+        leds.setPixelColor(illuminated.ledIndex, leds.Color(illuminated.r, illuminated.g, illuminated.b, illuminated.w));
+    }
+    leds.show();
 
-    SerialProtocol::BoardInfo boardInfo;
-    boardInfo.boardVersion = value.someInt;
-    boardInfo.temperature = value.someFloat * 0.5;
-    serialCommunicator.sendResponse(
-        SerialProtocol::MessageType::responseBoardInfo,
-        reinterpret_cast<byte*>(&boardInfo)
-    );
+    display.write(1, 0, "Illum. led ");
+    display.write(1, 11, String(illuminated.ledIndex) + "    ");
 }
 
 }
