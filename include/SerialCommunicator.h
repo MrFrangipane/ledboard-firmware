@@ -115,7 +115,7 @@ private:
     std::vector<byte> dataBuffer;
     std::vector<byte> responseBuffer;
     WireOled display;
-    int8_t pins[8] = { 8, 9, 10, 11, 12, 13, 14, 15 };
+    int8_t pins[8] = { 6, 7, 8, 9, 10, 11, 12, 13 };
     Adafruit_NeoPXL8 leds {300, pins, NEO_RGBW};
 
     void resetToIdle() {
