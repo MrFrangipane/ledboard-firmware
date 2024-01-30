@@ -35,14 +35,14 @@ namespace Frangitron {
                 return;
             }
 
-            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-
             while (Serial.available() > 0) {
+                digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+
                 byte incomingByte = Serial.read();
 
                 if (receivingStatus == ReceivingStatus::Idle && incomingByte == SerialProtocol::flagBegin) {
                     receivingStatus = ReceivingStatus::ReceivingHeader;
-                    return;
+                    continue;
                 }
 
                 if (receivingStatus == ReceivingStatus::ReceivingHeader) {
@@ -65,10 +65,12 @@ namespace Frangitron {
                     if (receiveDataBuffer.size() < inDataSize) {
                         receiveDataBuffer.push_back(incomingByte);
                         continue;
+
                     } else if (receiveDataBuffer.size() == inDataSize && incomingByte == SerialProtocol::flagEnd) {
                         if (direction == SerialProtocol::Direction::Send &&
                             receiveCallbacks.find(dataTypeCode) != receiveCallbacks.end()) {
                             receiveCallbacks.at(dataTypeCode)(board, receiveDataBuffer);
+
                         } else if (direction == SerialProtocol::Direction::Receive &&
                                    sendCallbacks.find(dataTypeCode) != sendCallbacks.end()) {
                             sendCallbacks.at(dataTypeCode)(board, sendDataBuffer);
@@ -82,6 +84,7 @@ namespace Frangitron {
 
         void sendResponse() {
             Serial.write(static_cast<byte>(SerialProtocol::flagBegin));
+            Serial.write(static_cast<byte>(SerialProtocol::Direction::Send));
             Serial.write(static_cast<byte>(dataTypeCode));
             Serial.write(sendDataBuffer.data(), sendDataBuffer.size());
             Serial.write(static_cast<byte>(SerialProtocol::flagEnd));

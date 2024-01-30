@@ -45,8 +45,8 @@ namespace Frangitron {
         struct Configuration {
             int pixelType = static_cast<int>(PixelType::RGB);
             int pixelCount = 60;
-            uint8_t boardID[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-            uint8_t ipAddress[4] = {0, 0, 0, 0};
+            byte boardID[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+            byte ipAddress[4] = {0, 0, 0, 0};
         };
 
         struct Illumination {

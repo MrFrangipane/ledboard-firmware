@@ -22,7 +22,12 @@ namespace Frangitron {
         configuration.boardID[6] = 0x47;
         configuration.boardID[7] = 0x48;
 
-        data.reserve(sizeof(SerialProtocol::Configuration));
+        configuration.ipAddress[0] = 0x61;
+        configuration.ipAddress[1] = 0x62;
+        configuration.ipAddress[2] = 0x63;
+        configuration.ipAddress[3] = 0x64;
+
+        data.resize(sizeof(SerialProtocol::Configuration)); // FIXME be more efficient
         memcpy(data.data(), &configuration, sizeof(SerialProtocol::Configuration));
 
         board->displayWrite(0, 0, "Configuration >");
