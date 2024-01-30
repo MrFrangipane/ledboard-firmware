@@ -1,57 +1,66 @@
 #ifndef PLATFORMIO_SERIALPROTOCOL_H
 #define PLATFORMIO_SERIALPROTOCOL_H
 
+#include <map>
+#include <variant>
 
-#include <cstdint>
+#include <Arduino.h>
 
 
-namespace ledboard {
+namespace Frangitron {
 
-class SerialProtocol {
-    /*
-     * Message topology
-     *
-     * ```
-     * |   0   |       1      | 2 | 3 | 4 | 5 |   n  | 6 + n |
-     * | begin | message type |   data size   | data |  end  |
-     * |-------|           header             | data |-------|
-     * ```
-     */
-public:
-    enum class MessageType : byte {
-        Illuminate = 0x41,  // "A"
-        Configure = 0x42    // "B"
+    class SerialProtocol {
+        /*
+         * Message topology
+         *
+         * ```
+         * |   0   |    1      |     2     |   n  | 3 + n |
+         * | begin | direction | data type | data |  end  |
+         * |-------| ------ header ------- | data |-------|
+         * ```
+         */
+    public:
+        enum class Direction : int {
+            Send,
+            Receive
+        };
+
+        static constexpr uint8_t headerSize = 2;
+        static constexpr byte flagBegin = 0x3c;
+        static constexpr byte flagEnd = 0x3e;
+
+        /* //////////////////////////////// */
+
+        enum class PixelType : int {
+            RGB,
+            RGBW
+        };
+
+        enum class DataTypeCode : byte {
+            Configuration = 0x41,
+            Illumination = 0x42,
+        };
+
+        struct Configuration {
+            int pixelType = static_cast<int>(PixelType::RGB);
+            int pixelCount = 60;
+            uint8_t boardID[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+            uint8_t ipAddress[4] = {0, 0, 0, 0};
+        };
+
+        struct Illumination {
+            int startPixel = 0;
+            int endPixel = 0;
+            int brightness = 0;
+        };
+
+        static const std::map<DataTypeCode, uint16_t> DataSize;
     };
 
-    struct IlluminatedLed {
-        int ledIndex = 0;
-        int r = 0;
-        int g = 0;
-        int b = 0;
-        int w = 0;
+    const std::map<SerialProtocol::DataTypeCode, uint16_t> SerialProtocol::DataSize = {
+            { SerialProtocol::DataTypeCode::Configuration, sizeof(SerialProtocol::Configuration) },
+            { SerialProtocol::DataTypeCode::Illumination, sizeof(SerialProtocol::Illumination) },
     };
-
-    enum class PixelType : int {
-        RGB,
-        RGBW
-    };
-
-    struct Configuration {
-        int pixelType = static_cast<int>(PixelType::RGB);
-        int pixelCount = 60;
-    };
-
-    static constexpr uint8_t headerSize = 5;
-    static constexpr byte flagBegin = 0x3c; // "<"
-    static constexpr byte flagEnd = 0x3e;   // ">"
-
-    static std::map<MessageType, int> messageTypeToDataSize;
-};
-
-std::map<SerialProtocol::MessageType, int> SerialProtocol::messageTypeToDataSize = {
-    {SerialProtocol::MessageType::Illuminate, sizeof(SerialProtocol::IlluminatedLed)},
-    {SerialProtocol::MessageType::Configure, sizeof(SerialProtocol::Configuration)}
-};
-
 }
+
 #endif //PLATFORMIO_SERIALPROTOCOL_H

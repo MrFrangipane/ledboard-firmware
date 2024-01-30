@@ -1,23 +1,19 @@
 #include <Arduino.h>
-#include "SerialCommunicator.h"
-#include "SerialProtocol.h"
-#include "SerialCallbacks.h"
+#include "LEDBoard.h"
 
-using namespace ledboard;
 
-SerialCommunicator serialCommunicator;
+using namespace Frangitron;
+
+LEDBoard ledBoard;
 
 
 void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
-    Serial.begin();
-    serialCommunicator.init();
-    serialCommunicator.registerCallback(SerialProtocol::MessageType::Illuminate, illuminate);
-    serialCommunicator.registerCallback(SerialProtocol::MessageType::Configure, configure);
+    ledBoard.init();
 }
 
 void loop() {
-    serialCommunicator.poll();
+    ledBoard.loop();
 }

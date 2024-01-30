@@ -2,129 +2,116 @@
 #define PLATFORMIO_SERIALCOMMUNICATOR_H
 
 #include <Arduino.h>
+#include <array>
 #include <functional>
 #include <vector>
-#include <map>
+
+#include "ILEDBoard.h"
 #include "SerialProtocol.h"
-#include "WireOled.h"
-#include "Adafruit_NeoPXL8.h"
 
 
-#define COMMAND_BUFFER_SIZE
+namespace Frangitron {
 
+    class SerialCommunicator {
+    public:
+        using ReceiveCallback = std::function<void(ILEDBoard*, const std::vector<byte> &)>;
+        using SendCallback = std::function<void(ILEDBoard*, std::vector<byte> &)>;
 
-namespace ledboard {
-
-enum class ReceivingStatus : byte {
-    Idle, ReceivingHeader, ReceivingData
-};
-
-class SerialCommunicator {
-public:
-    using Callback = std::function<void(SerialCommunicator &, WireOled &, Adafruit_NeoPXL8 &, const std::vector<byte> &)>;
-
-    void registerCallback(SerialProtocol::MessageType messageType, Callback callback) {
-        callbacks[messageType] = callback;
-    }
-
-    void init() {
-        leds.begin();
-        leds.setBrightness(255);
-        leds.fill(0x00400000); // 25% green
-        leds.show();
-
-        display.init();
-        display.setContrast(0);
-        display.write("Hello");
-    }
-
-    void poll() {
-        display.pollScreensaver();
-
-        if (!Serial.dtr()) {
-            return;
+        void init(ILEDBoard* board1) {
+            board = board1;
         }
 
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+        void registerReceiveCallback(SerialProtocol::DataTypeCode dataTypeCode1, ReceiveCallback callback) {
+            receiveCallbacks[dataTypeCode1] = callback;
+        }
 
-        while (Serial.available() > 0) {
-            byte incomingByte = Serial.read();
+        void registerSendCallback(SerialProtocol::DataTypeCode dataTypeCode1, SendCallback callback){
+            sendCallbacks[dataTypeCode1] = callback;
+        }
 
-            if (receivingStatus == ReceivingStatus::Idle && incomingByte == SerialProtocol::flagBegin) {
-                receivingStatus = ReceivingStatus::ReceivingHeader;
+        void poll() {
+            if (!Serial.dtr()) {
                 return;
             }
 
-            if (receivingStatus == ReceivingStatus::ReceivingHeader) {
-                if (headerBufferIndex < SerialProtocol::headerSize) {
-                    headerBuffer[headerBufferIndex] = incomingByte;
-                    headerBufferIndex++;
-                }
-                else {
-                    mMessageType = static_cast<SerialProtocol::MessageType>(headerBuffer[0]);
-                    inDataSize = (headerBuffer[4] << 24) | (headerBuffer[3] << 16) | (headerBuffer[2] << 8) | headerBuffer[1];
-                    receivingStatus = ReceivingStatus::ReceivingData;
-                }
-            }
+            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
-            if (receivingStatus == ReceivingStatus::ReceivingData) {
-                if (dataBuffer.size() < inDataSize) {
-                    dataBuffer.push_back(incomingByte);
+            while (Serial.available() > 0) {
+                byte incomingByte = Serial.read();
+
+                if (receivingStatus == ReceivingStatus::Idle && incomingByte == SerialProtocol::flagBegin) {
+                    receivingStatus = ReceivingStatus::ReceivingHeader;
+                    return;
                 }
-                else if (dataBuffer.size() == inDataSize && incomingByte == SerialProtocol::flagEnd) {
-                    if (callbacks.find(mMessageType) != callbacks.end()) {
-                        callbacks[mMessageType](*this, display, leds, dataBuffer);
+
+                if (receivingStatus == ReceivingStatus::ReceivingHeader) {
+                    if (headerBufferIndex < SerialProtocol::headerSize) {
+                        headerBuffer[headerBufferIndex] = incomingByte;
+                        headerBufferIndex++;
+                    }
+                    else {
+                        direction = static_cast<SerialProtocol::Direction>(headerBuffer[0]);
+                        dataTypeCode = static_cast<SerialProtocol::DataTypeCode>(headerBuffer[1]);
+                        if (direction == SerialProtocol::Direction::Send) {
+                            inDataSize = SerialProtocol::DataSize.at(dataTypeCode);
+                        }
+                        else {
+                            inDataSize = 0;
+                        }
+                        receivingStatus = ReceivingStatus::ReceivingData;
+                    }
+                }
+
+                if (receivingStatus == ReceivingStatus::ReceivingData) {
+                    if (receiveDataBuffer.size() < inDataSize) {
+                        receiveDataBuffer.push_back(incomingByte);
+                        continue;
+                    }
+                    else if (receiveDataBuffer.size() == inDataSize && incomingByte == SerialProtocol::flagEnd) {
+                        if (direction == SerialProtocol::Direction::Send && receiveCallbacks.find(dataTypeCode) != receiveCallbacks.end()) {
+                            receiveCallbacks.at(dataTypeCode)(board, receiveDataBuffer);
+                        } else if (direction == SerialProtocol::Direction::Receive && sendCallbacks.find(dataTypeCode) != sendCallbacks.end()) {
+                            sendCallbacks.at(dataTypeCode)(board, sendDataBuffer);
+                            sendResponse();
+                        }
                     }
                     resetToIdle();
                 }
-                else {
-                    resetToIdle();
-                }
             }
         }
-    }
 
-    void sendResponse(SerialProtocol::MessageType messageType, byte* data) {
-        uint16_t dataSize;
-        if (SerialProtocol::messageTypeToDataSize.find(messageType) != SerialProtocol::messageTypeToDataSize.end()) {
-            dataSize = SerialProtocol::messageTypeToDataSize[messageType];
-        } else {
-            return;
+        void sendResponse() {
+            Serial.write(static_cast<byte>(SerialProtocol::flagBegin));
+            Serial.write(static_cast<byte>(dataTypeCode));
+            Serial.write(sendDataBuffer.data(), sendDataBuffer.size());
+            Serial.write(static_cast<byte>(SerialProtocol::flagEnd));
         }
-        Serial.write(static_cast<byte>(SerialProtocol::flagBegin));
-        Serial.write(static_cast<byte>(messageType));
 
-        Serial.write(dataSize & 255);
-        Serial.write((dataSize >> 8)  & 255);
-        Serial.write((dataSize >> 16) & 255);
-        Serial.write((dataSize >> 24) & 255);
+    private:
+        enum class ReceivingStatus : byte {
+            Idle, ReceivingHeader, ReceivingData
+        };
 
-        for (int i = 0; i < dataSize; i++) {
-            Serial.write(data[i]);
+        ILEDBoard* board;
+        std::map<SerialProtocol::DataTypeCode, ReceiveCallback> receiveCallbacks;
+        std::map<SerialProtocol::DataTypeCode, SendCallback> sendCallbacks;
+        ReceivingStatus receivingStatus = ReceivingStatus::Idle;
+        uint8_t headerBufferIndex = 0;
+        std::array<byte, SerialProtocol::headerSize> headerBuffer;
+        SerialProtocol::DataTypeCode dataTypeCode;
+        SerialProtocol::Direction direction = SerialProtocol::Direction::Receive;
+        uint16_t inDataSize = 0;
+        std::vector<byte> receiveDataBuffer;
+        std::vector<byte> sendDataBuffer;
+
+        void resetToIdle() {
+            receivingStatus = ReceivingStatus::Idle;
+            headerBufferIndex = 0;
+            inDataSize = 0;
+            headerBuffer.fill(0);
+            receiveDataBuffer.clear();
+            sendDataBuffer.clear();
         }
-        Serial.write(static_cast<byte>(SerialProtocol::flagEnd));
-    }
-
-private:
-    std::map<SerialProtocol::MessageType, Callback> callbacks;
-    ReceivingStatus receivingStatus = ReceivingStatus::Idle;
-    uint8_t headerBufferIndex = 0;
-    uint16_t inDataSize = 0;
-    SerialProtocol::MessageType mMessageType;
-    std::array<byte, SerialProtocol::headerSize> headerBuffer;
-    std::vector<byte> dataBuffer;
-    std::vector<byte> responseBuffer;
-    WireOled display;
-    int8_t pins[8] = { 6, 7, 8, 9, 10, 11, 12, 13 };
-    Adafruit_NeoPXL8 leds {300, pins, NEO_RGBW};
-
-    void resetToIdle() {
-        receivingStatus = ReceivingStatus::Idle;
-        headerBufferIndex = 0;
-        inDataSize = 0;
-        headerBuffer.fill(0);
-        dataBuffer.clear();
-    }
-};
+    };
 }
 #endif //PLATFORMIO_SERIALCOMMUNICATOR_H
