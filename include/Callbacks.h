@@ -1,6 +1,7 @@
 #ifndef PLATFORMIO_CALLBACKS_H
 #define PLATFORMIO_CALLBACKS_H
 
+
 #include <Arduino.h>
 
 #include "SerialProtocol.h"
@@ -10,7 +11,7 @@
 
 namespace Frangitron {
 
-    void sendConfiguration(ILEDBoard* board, std::vector<byte> &data) {
+    void sendConfiguration(ILEDBoard *board, std::vector<byte> &data) {
         SerialProtocol::Configuration configuration;
         configuration.boardID[0] = 0x41;
         configuration.boardID[1] = 0x42;
@@ -28,7 +29,7 @@ namespace Frangitron {
         board->displayWrite(1, 0, String(configuration.boardID, 8));
     }
 
-    void receiveConfiguration(ILEDBoard* board, const std::vector<byte> &data) {
+    void receiveConfiguration(ILEDBoard *board, const std::vector<byte> &data) {
         SerialProtocol::Configuration configuration;
         memcpy(&configuration, data.data(), data.size());
 

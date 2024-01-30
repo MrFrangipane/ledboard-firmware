@@ -1,6 +1,7 @@
 #ifndef PLATFORMIO_SERIALPROTOCOL_H
 #define PLATFORMIO_SERIALPROTOCOL_H
 
+
 #include <map>
 #include <variant>
 
@@ -58,8 +59,8 @@ namespace Frangitron {
     };
 
     const std::map<SerialProtocol::DataTypeCode, uint16_t> SerialProtocol::DataSize = {
-            { SerialProtocol::DataTypeCode::Configuration, sizeof(SerialProtocol::Configuration) },
-            { SerialProtocol::DataTypeCode::Illumination, sizeof(SerialProtocol::Illumination) },
+            {SerialProtocol::DataTypeCode::Configuration, sizeof(SerialProtocol::Configuration)},
+            {SerialProtocol::DataTypeCode::Illumination,  sizeof(SerialProtocol::Illumination)},
     };
 }
 

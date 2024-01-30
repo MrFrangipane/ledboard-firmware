@@ -1,6 +1,7 @@
 #ifndef PLATFORMIO_LEDBOARD_H
 #define PLATFORMIO_LEDBOARD_H
 
+
 #include "SerialProtocol.h"
 #include "SerialCommunicator.h"
 #include "Callbacks.h"
@@ -10,7 +11,7 @@
 
 namespace Frangitron {
 
-    class LEDBoard: public ILEDBoard {
+    class LEDBoard : public ILEDBoard {
     public:
         void init() {
             display.init();
@@ -19,7 +20,8 @@ namespace Frangitron {
 
             serialCommunicator.init(this);
             serialCommunicator.registerSendCallback(SerialProtocol::DataTypeCode::Configuration, sendConfiguration);
-            serialCommunicator.registerReceiveCallback(SerialProtocol::DataTypeCode::Configuration, receiveConfiguration);
+            serialCommunicator.registerReceiveCallback(SerialProtocol::DataTypeCode::Configuration,
+                                                       receiveConfiguration);
         }
 
         void loop() {

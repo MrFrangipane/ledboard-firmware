@@ -18,16 +18,17 @@
 
 
 struct WireOledConfig {
-    short pinReset { DEFAULT_PIN_RESET };
-    uint8_t rowMode { ROW_MODE_2ROWS };
-    uint8_t addr { DEFAULT_ADDRESS };
-    uint16_t screensaverTimeout { 30000 };  // 30s
+    short pinReset{DEFAULT_PIN_RESET};
+    uint8_t rowMode{ROW_MODE_2ROWS};
+    uint8_t addr{DEFAULT_ADDRESS};
+    uint16_t screensaverTimeout{30000};  // 30s
 };
 
 
 class WireOled {
 public:
     WireOled() {}
+
     ~WireOled() {}
 
     bool detect(const WireOledConfig config) {
@@ -126,7 +127,7 @@ public:
     }
 
     void setCursorBlinking(bool isBlinking) {
-        if(isBlinking) {
+        if (isBlinking) {
             mState |= STATE_CURSOR_BLINKING;
         } else {
             mState &= ~STATE_CURSOR_BLINKING;
@@ -139,17 +140,18 @@ public:
     }
 
     void home() {
-        move(0,0);
+        move(0, 0);
     }
 
     void move(uint8_t row, uint8_t col) {
-        int row_offset[] = { 0x00, 0x40 }; // TODO: 4 rows ?
+        int row_offset[] = {0x00, 0x40}; // TODO: 4 rows ?
         command(0x80 | (col + row_offset[row]));
     }
 
     void write(char c) {
         data(c);
     }
+
     void write(const String &s) {
         int i = 0;
         while (s[i]) {
@@ -164,7 +166,7 @@ public:
     }
 
     void pollScreensaver() {
-        if ( millis() - mlastActivity > mConfig.screensaverTimeout ) {
+        if (millis() - mlastActivity > mConfig.screensaverTimeout) {
             setActive(false);
         }
     }
@@ -204,4 +206,5 @@ private:
         Wire.endTransmission();
     }
 };
+
 #endif //ARDUINO_I2C_US2066_OLED_WIREOLED_H
