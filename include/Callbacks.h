@@ -11,37 +11,31 @@
 
 namespace Frangitron {
 
-    void sendConfiguration(ILEDBoard *board, std::vector<byte> &data) {
-        SerialProtocol::Configuration configuration;
-        configuration.boardID[0] = 0x41;
-        configuration.boardID[1] = 0x42;
-        configuration.boardID[2] = 0x43;
-        configuration.boardID[3] = 0x44;
-        configuration.boardID[4] = 0x45;
-        configuration.boardID[5] = 0x46;
-        configuration.boardID[6] = 0x47;
-        configuration.boardID[7] = 0x48;
+    void sendSettings(void *vBoard, std::vector<byte> &data) {
+        SerialProtocol::BoardSettings settings;
+        settings.ipAddress[0] = 0x61;
+        settings.ipAddress[1] = 0x62;
+        settings.ipAddress[2] = 0x63;
+        settings.ipAddress[3] = 0x64;
 
-        configuration.ipAddress[0] = 0x61;
-        configuration.ipAddress[1] = 0x62;
-        configuration.ipAddress[2] = 0x63;
-        configuration.ipAddress[3] = 0x64;
+        data.resize(sizeof(SerialProtocol::BoardSettings)); // FIXME be more efficient
+        memcpy(data.data(), &settings, sizeof(SerialProtocol::BoardSettings));
 
-        data.resize(sizeof(SerialProtocol::Configuration)); // FIXME be more efficient
-        memcpy(data.data(), &configuration, sizeof(SerialProtocol::Configuration));
-
+        auto board = static_cast<ILEDBoard*>(vBoard);
         board->displayWrite(0, 0, "Configuration >");
-        board->displayWrite(1, 0, String(configuration.boardID, 8));
+        board->displayWrite(1, 0, String(settings.ipAddress, 4) + "    ");
+        board->displayWrite(1, 5, String(settings.name, 10));
     }
 
-    void receiveConfiguration(ILEDBoard *board, const std::vector<byte> &data) {
-        SerialProtocol::Configuration configuration;
-        memcpy(&configuration, data.data(), data.size());
+    void receiveSettings(void *vBoard, const std::vector<byte> &data) {
+        SerialProtocol::BoardSettings settings;
+        memcpy(&settings, data.data(), data.size());
 
+        auto board = static_cast<ILEDBoard*>(vBoard);
         board->displayWrite(0, 0, "Configuration <");
-        board->displayWrite(1, 0, String(configuration.boardID, 8));
+        board->displayWrite(1, 0, String(settings.ipAddress, 4) + "    ");
+        board->displayWrite(1, 5, String(settings.name, 10));
     }
 }
-
 
 #endif //PLATFORMIO_CALLBACKS_H

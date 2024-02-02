@@ -17,11 +17,19 @@ namespace Frangitron {
             display.init();
             display.setContrast(0);
             display.write("Hello");
+            display.write(1, 0, String(sizeof(SerialProtocol::BoardSettings)));
+            display.write(1, 4, String(sizeof(char)));
+            display.write(1, 8, String(sizeof(int)));
 
-            serialCommunicator.init(this);
-            serialCommunicator.registerSendCallback(SerialProtocol::DataTypeCode::Configuration, sendConfiguration);
-            serialCommunicator.registerReceiveCallback(SerialProtocol::DataTypeCode::Configuration,
-                                                       receiveConfiguration);
+            serialCommunicator.setCallbackParent(this);
+            serialCommunicator.registerSendCallback(
+                SerialProtocol::DataTypeCode::BoardSettingsCode,
+                sendSettings
+            );
+            serialCommunicator.registerReceiveCallback(
+                SerialProtocol::DataTypeCode::BoardSettingsCode,
+                receiveSettings
+            );
         }
 
         void loop() {

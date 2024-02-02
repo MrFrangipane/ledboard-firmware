@@ -1,9 +1,7 @@
 #ifndef PLATFORMIO_SERIALPROTOCOL_H
 #define PLATFORMIO_SERIALPROTOCOL_H
 
-
 #include <map>
-#include <variant>
 
 #include <Arduino.h>
 
@@ -32,36 +30,23 @@ namespace Frangitron {
 
         /* //////////////////////////////// */
 
-        enum class PixelType : int {
-            RGB,
-            RGBW
+        enum DataTypeCode : int {
+            BoardSettingsCode,
         };
 
-        enum class DataTypeCode : byte {
-            Configuration = 0x41,
-            Illumination = 0x42,
-        };
-
-        struct Configuration {
-            int pixelType = static_cast<int>(PixelType::RGB);
-            int pixelCount = 60;
-            byte boardID[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-            byte ipAddress[4] = {0, 0, 0, 0};
-        };
-
-        struct Illumination {
-            int startPixel = 0;
-            int endPixel = 0;
-            int brightness = 0;
+        struct BoardSettings {
+            char name[4] = "   ";
+            int hardwareRevision = 1;
+            byte hardwareId[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            byte ipAddress[4] = {0x00, 0x00, 0x00, 0x00};
         };
 
         static const std::map<DataTypeCode, uint16_t> DataSize;
     };
 
     const std::map<SerialProtocol::DataTypeCode, uint16_t> SerialProtocol::DataSize = {
-            {SerialProtocol::DataTypeCode::Configuration, sizeof(SerialProtocol::Configuration)},
-            {SerialProtocol::DataTypeCode::Illumination,  sizeof(SerialProtocol::Illumination)},
+        {SerialProtocol::DataTypeCode::BoardSettingsCode, sizeof(SerialProtocol::BoardSettings)},
     };
 }
 
-#endif //PLATFORMIO_SERIALPROTOCOL_H
+#endif // PLATFORMIO_SERIALPROTOCOL_H
