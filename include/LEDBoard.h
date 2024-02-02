@@ -3,16 +3,14 @@
 
 
 #include <LittleFS.h>
-#include <ENC28J60lwIP.h>
+
+#include "ArtnetEtherENC.h"
 
 #include "Callbacks.h"
 #include "ILEDBoard.h"
 #include "SerialCommunicator.h"
 #include "SerialProtocol.h"
 #include "WireOled.h"
-
-
-#define AIRCR_Register (*((volatile uint32_t*)(PPB_BASE + 0x0ED0C)))
 
 
 namespace Frangitron {
@@ -57,9 +55,10 @@ namespace Frangitron {
                     boardId.id[7]
             };
 
-            lwipPollingPeriod(10);
-            eth.config(ip);
-            eth.begin(mac);
+            Ethernet.begin(mac, ip);
+//            lwipPollingPeriod(10);
+//            eth.config(ip);
+//            eth.begin(mac);
 
             // WELCOME
             display.write("Hello " + String(sizeof(settings)));
@@ -69,12 +68,17 @@ namespace Frangitron {
                 String(settings.ipAddress[2]) + "." +
                 String(settings.ipAddress[3])
             );
+
+            // ArtNet
+            artnetReceiver.subscribeArtDmx(receiveArtNet);
+            artnetReceiver.begin();
         }
 
         void loop() {
             display.pollScreensaver();
             serialCommunicator.poll();
-            displayWrite(0, 0, eth.localIP().toString() + " " + String(eth.connected()));
+
+            displayWrite(0, 0, Ethernet.localIP().toString() + " " + String(Ethernet.hardwareStatus()));
             displayWrite(1, 10, " " + String(millis()) + " ");
         }
 
@@ -96,7 +100,7 @@ namespace Frangitron {
                 settings.ipAddress[3]
             );
             displayWrite(1, 0, ip1.toString() + "   ");
-            netif_set_ipaddr(eth.getNetIf(), ip1);
+//            netif_set_ipaddr(eth.getNetIf(), ip1);
         }
 
         void loadSettings() override {
@@ -117,14 +121,15 @@ namespace Frangitron {
             File f = LittleFS.open("settings.bin", "w");
             f.write(reinterpret_cast<char*>(&settings), sizeof(settings));
             f.close();
-//            AIRCR_Register = 0x5FA0004;  REBOOT
+            // rp2040.reboot();
         }
 
     private:
         SerialCommunicator serialCommunicator;
         WireOled display;
         SerialProtocol::BoardSettings settings;
-        ENC28J60lwIP eth;
+//        ENC28J60lwIP eth;
+        ArtnetReceiver artnetReceiver;
     };
 }
 

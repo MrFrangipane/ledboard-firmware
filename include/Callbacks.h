@@ -38,4 +38,11 @@ namespace Frangitron {
     }
 }
 
+
+void receiveArtNet(const uint8_t *data, uint16_t size, const ArtDmxMetadata &metadata, const ArtNetRemoteInfo &remote) {
+    if (metadata.universe == 1) {
+        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    }
+}
+
 #endif //PLATFORMIO_CALLBACKS_H
