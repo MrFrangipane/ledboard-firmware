@@ -35,10 +35,14 @@ namespace Frangitron {
         };
 
         struct BoardSettings {
-            char name[4] = "   ";
+            char name[8] = "       ";
             int hardwareRevision = 1;
+            int firmwareRevision = 1;
             byte hardwareId[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             byte ipAddress[4] = {0x00, 0x00, 0x00, 0x00};
+            int universeCount = 2;
+            int pixelPerUniverse = 150;
+            int doSave = 0;
         };
 
         static const std::map<DataTypeCode, uint16_t> DataSize;
