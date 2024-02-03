@@ -17,3 +17,8 @@ void setup() {
 void loop() {
     ledBoard.loop();
 }
+
+
+void loop1() {
+    ledBoard.loop1();
+}

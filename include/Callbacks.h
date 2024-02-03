@@ -3,6 +3,7 @@
 
 
 #include <Arduino.h>
+#include <ArtnetEtherENC.h>
 
 #include "SerialProtocol.h"
 #include "ILEDBoard.h"

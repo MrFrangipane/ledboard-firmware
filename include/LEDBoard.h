@@ -4,12 +4,12 @@
 
 #include <LittleFS.h>
 
-#include "ArtnetEtherENC.h"
+#include <ArtnetEtherENC.h>
 
 #include "Callbacks.h"
 #include "ILEDBoard.h"
-#include "SerialCommunicator.h"
 #include "SerialProtocol.h"
+#include "SerialCommunicator.h"
 #include "WireOled.h"
 
 
@@ -75,11 +75,16 @@ namespace Frangitron {
         }
 
         void loop() {
+            artnetReceiver.parse();
+        }
+
+        void loop1() {
             display.pollScreensaver();
             serialCommunicator.poll();
 
-            displayWrite(0, 0, Ethernet.localIP().toString() + " " + String(Ethernet.hardwareStatus()));
-            displayWrite(1, 10, " " + String(millis()) + " ");
+            displayWrite(0, 0, Ethernet.localIP().toString() + "  ");
+            displayWrite(1, 10, " " + String(loopCount) + " ");
+            loopCount++;
         }
 
         void displayWrite(uint8_t row, uint8_t column, String text) override {
@@ -101,6 +106,10 @@ namespace Frangitron {
             );
             displayWrite(1, 0, ip1.toString() + "   ");
 //            netif_set_ipaddr(eth.getNetIf(), ip1);
+
+            if (settings.doSave == 1) {
+                saveSettings();
+            }
         }
 
         void loadSettings() override {
@@ -128,8 +137,8 @@ namespace Frangitron {
         SerialCommunicator serialCommunicator;
         WireOled display;
         SerialProtocol::BoardSettings settings;
-//        ENC28J60lwIP eth;
         ArtnetReceiver artnetReceiver;
+        int loopCount = 0;
     };
 }
 
