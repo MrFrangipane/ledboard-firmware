@@ -1,5 +1,7 @@
 # LED Board - Firmware
 
+**/!\ BETA VERSION**
+
 Arduino (PlatformIO + Arduino-Pico) firmware for LED Board 
 
 ## Todo
