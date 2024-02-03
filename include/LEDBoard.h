@@ -99,6 +99,7 @@ namespace Frangitron {
         }
 
         const void* getSettings() override {
+            displayWrite(1, 7, "> send    ");
             return reinterpret_cast<void*>(&settings);
         }
 
@@ -106,9 +107,12 @@ namespace Frangitron {
             memcpy(&settings, settings1, sizeof(settings));
             setFixedSettingsValues();
 
-            if (settings.doSave == 1) {
+            if (settings.doSaveAndReboot == 1) {
+                displayWrite(1, 7, "< save   ");
                 saveSettings();
-                //rp2040.reboot();
+                rp2040.reboot();
+            } else {
+                displayWrite(1, 7, "< no save");
             }
         }
 

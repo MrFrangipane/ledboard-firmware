@@ -18,8 +18,6 @@ namespace Frangitron {
 
         data.resize(sizeof(SerialProtocol::BoardSettings)); // FIXME be more efficient
         memcpy(data.data(), board->getSettings(), sizeof(SerialProtocol::BoardSettings));
-
-        board->displayWrite(0, 15, ">");
     }
 
     void receiveSettings(void *vBoard, const std::vector<byte> &data) {
@@ -27,17 +25,7 @@ namespace Frangitron {
         memcpy(&settings, data.data(), data.size());
 
         auto board = static_cast<ILEDBoard*>(vBoard);
-
-        if (settings.doSave == 1) {
-            board->saveSettings();
-            board->displayWrite(0, 0, "Conf < saved    ");
-        } else {
-            board->displayWrite(0, 0, "Conf < unsaved  ");
-        }
-
         board->setSettings(&settings);
-
-        board->displayWrite(0, 15, "<");
     }
 
     void illuminate(int *fpsCounter, Adafruit_NeoPXL8 *leds, const SerialProtocol::BoardSettings &settings, const uint8_t *data, uint16_t transmitterIndex) {
