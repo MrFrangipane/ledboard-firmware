@@ -105,6 +105,11 @@ namespace Frangitron {
 
         void setSettings(const void* settings1) override {
             memcpy(&settings, settings1, sizeof(settings));
+
+            if (settings.doRebootBootloader) {
+                rp2040.rebootToBootloader();
+            }
+
             setFixedSettingsValues();
 
             if (settings.doSaveAndReboot == 1) {

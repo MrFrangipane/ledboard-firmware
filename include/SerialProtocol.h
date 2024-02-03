@@ -48,7 +48,8 @@ namespace Frangitron {
             int universeB = 1;
             int universeC = 2;
             int pixelPerUniverse = 150;
-            int doSave = 0;
+            int doSaveAndReboot = 0;
+            int doRebootBootloader = 0;
         };
 
         static const std::map<DataTypeCode, uint16_t> DataSize;
