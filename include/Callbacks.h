@@ -45,10 +45,10 @@ namespace Frangitron {
         if (metadata.universe == settings.universeA) {
             illuminate(fpsCounter, leds, settings, data, 0);
         }
-        else if (metadata.universe == settings.universeB) {
+        if (metadata.universe == settings.universeB) {
             illuminate(fpsCounter, leds, settings, data, 1);
         }
-        else if (metadata.universe == settings.universeC) {
+        if (metadata.universe == settings.universeC) {
             illuminate(fpsCounter, leds, settings, data, 2);
         }
     }

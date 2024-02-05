@@ -44,9 +44,9 @@ namespace Frangitron {
             int firmwareRevision = 1;
             byte hardwareId[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             byte ipAddress[4] = {0x00, 0x00, 0x00, 0x00};
-            int universeA = 0;
-            int universeB = 1;
-            int universeC = 2;
+            int universeA = -1;
+            int universeB = -1;
+            int universeC = -1;
             int pixelPerUniverse = 150;
             int doSaveAndReboot = 0;
             int doRebootBootloader = 0;
