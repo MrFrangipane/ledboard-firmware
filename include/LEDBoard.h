@@ -69,6 +69,8 @@ namespace Frangitron {
             display.init();
             display.setContrast(0);
             display.clear();
+
+            ready = true;
         }
 
         void loop() {
@@ -77,6 +79,8 @@ namespace Frangitron {
         }
 
         void loop1() {
+            if (!ready) { return; }
+
             display.pollScreensaver();
             serialCommunicator.poll();
 
@@ -151,6 +155,7 @@ namespace Frangitron {
         int fpsCounter[3] = {0, 0, 0};
         unsigned long fpsTimestamp = 0;
         double fps[3] = {0.0, 0.0, 0.0};
+        bool ready = false;
 
         void setFixedSettingsValues() {
             settings.hardwareRevision = 1;
